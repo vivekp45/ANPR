@@ -1,0 +1,15 @@
+﻿# Python 3.13
+fastapi==0.163.0
+uvicorn==0.54.0
+python-multipart==0.0.33
+
+# Image processing and numerical computing
+numpy==2.2.2
+opencv-python==4.11.0.86
+
+# License plate detection
+ultralytics==8.4.160
+
+# OCR recognition
+paddleocr==3.7.0
+paddlepaddle==3.3.1

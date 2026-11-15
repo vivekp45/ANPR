@@ -1,0 +1,41 @@
+﻿# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Generated files
+output/
+runs/
+results/
+backups/
+*.log
+
+# Training and source datasets
+data/
+dataset/
+training/
+sample inputs/
+database/ANPR_Complete_Dataset/images/
+database/ANPR_Demo_Dataset_58_Images/images/
+database/vehicle_photos/
+
+# Previous model backups
+src/anpr_backup_*.py
+
+# Exclude unnecessary metadata, but retain the demo database
+database/ANPR_Complete_Dataset/metadata/*
+!database/ANPR_Complete_Dataset/metadata/anpr_demo_database.sqlite

@@ -1,0 +1,702 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANPR | License Plate Recognition</title>
+
+<style>
+:root {
+    --bg: #090d18;
+    --panel: #111827;
+    --panel2: #172137;
+    --border: #26344d;
+    --text: #edf2ff;
+    --muted: #94a3b8;
+    --accent: #8b5cf6;
+    --cyan: #22d3ee;
+    --green: #34d399;
+    --red: #fb7185;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:
+        radial-gradient(ellipse at top left, #211647 0, transparent 38%),
+        var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+header {
+    padding: 22px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(9,13,24,.85);
+}
+
+.logo {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.logo span { color: var(--cyan); }
+
+.status {
+    font-size: 12px;
+    color: var(--green);
+    border: 1px solid #17664f;
+    padding: 8px 13px;
+    border-radius: 20px;
+}
+
+main {
+    max-width: 1200px;
+    margin: auto;
+    padding: 42px 22px 70px;
+}
+
+.hero { margin-bottom: 30px; }
+
+.eyebrow {
+    color: var(--cyan);
+    letter-spacing: 3px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+h1 {
+    font-size: clamp(30px, 5vw, 45px);
+    margin: 12px 0;
+}
+
+.hero p, .muted {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.panel {
+    background: rgba(17,24,39,.94);
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    padding: 25px;
+    margin-bottom: 22px;
+}
+
+.panel h2 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.upload-area {
+    border: 2px dashed #495b7c;
+    border-radius: 13px;
+    padding: 35px 15px;
+    text-align: center;
+    background: #121d31;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.upload-area:hover, .upload-area.dragover {
+    border-color: var(--cyan);
+    background: #17243d;
+}
+
+.upload-icon {
+    font-size: 38px;
+    margin-bottom: 10px;
+}
+
+.upload-area p {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+input[type=file] { display: none; }
+
+button {
+    background: linear-gradient(110deg, #7c3aed, #6366f1);
+    border: none;
+    border-radius: 9px;
+    color: white;
+    padding: 13px 22px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover { filter: brightness(1.15); }
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.secondary {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+.preview {
+    display: none;
+    margin-top: 20px;
+}
+
+.preview img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    display: block;
+}
+
+.filename {
+    color: var(--cyan);
+    font-size: 13px;
+    margin: 10px 0;
+    overflow-wrap: anywhere;
+}
+
+#message {
+    margin-top: 15px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.loader {
+    display: none;
+    color: var(--cyan);
+    margin-top: 15px;
+}
+
+.results { display: none; }
+
+.summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.metric {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    padding: 17px;
+    border-radius: 12px;
+}
+
+.metric small {
+    color: var(--muted);
+    display: block;
+    margin-bottom: 9px;
+}
+
+.metric strong {
+    font-size: 22px;
+}
+
+.result-card {
+    background: #121d31;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 19px;
+    margin: 15px 0;
+}
+
+.plate-number {
+    font-size: 29px;
+    letter-spacing: 3px;
+    font-weight: 800;
+    color: var(--cyan);
+    overflow-wrap: anywhere;
+}
+
+.badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+
+.badge {
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 15px;
+    background: #23364d;
+    color: #cbd5e1;
+}
+
+.good { color: var(--green); }
+.warn { color: #fbbf24; }
+
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.data-item {
+    background: #0d1628;
+    padding: 12px;
+    border-radius: 8px;
+    min-width: 0;
+}
+
+.data-item small {
+    color: var(--muted);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.data-item strong {
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+.warning {
+    background: #392b16;
+    border: 1px solid #8b6328;
+    color: #fcd98a;
+    border-radius: 9px;
+    padding: 12px;
+    margin: 15px 0;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.image-output {
+    width: 100%;
+    max-height: 540px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #080d17;
+    border: 1px solid var(--border);
+}
+
+.image-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+}
+
+@media(max-width:650px) {
+    main { padding: 25px 14px; }
+    .panel { padding: 17px; }
+    .summary { grid-template-columns: 1fr; }
+    .image-row { grid-template-columns: 1fr; }
+    .data-grid { grid-template-columns: 1fr; }
+    header { padding: 18px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">ANPR<span>.</span>VISION</div>
+    <div class="status">● IMAGE RECOGNITION SYSTEM</div>
+</header>
+
+<main>
+
+<section class="hero">
+    <div class="eyebrow">AUTOMATED NUMBER PLATE RECOGNITION</div>
+    <h1>Intelligent Vehicle<br>Identification System</h1>
+    <p>
+        Upload a vehicle image to detect its registration plate,
+        recognize characters and search the local demonstration database.
+    </p>
+</section>
+
+<section class="panel">
+    <h2>01 / Upload Image</h2>
+    <p class="muted">
+        Supported formats: JPG, JPEG, PNG, BMP and WEBP.
+        Maximum file size: 10 MB.
+    </p>
+
+    <div class="upload-area" id="dropArea">
+        <div class="upload-icon">⇧</div>
+        <strong>Drop your vehicle image here</strong>
+        <p>or click below to browse your device</p>
+        <button type="button" id="browseButton">Choose Image</button>
+    </div>
+
+    <input type="file" id="fileInput"
+           accept=".jpg,.jpeg,.png,.bmp,.webp">
+
+    <div class="preview" id="preview">
+        <div class="filename" id="filename"></div>
+        <img id="previewImage" alt="Selected vehicle image">
+    </div>
+
+    <div class="actions">
+        <button id="analyzeButton" disabled>
+            Analyze Image →
+        </button>
+        <button class="secondary" id="resetButton">
+            Reset
+        </button>
+    </div>
+
+    <div class="loader" id="loader">
+        Processing image using YOLO + PaddleOCR...
+    </div>
+
+    <div id="message" aria-live="polite"></div>
+</section>
+
+<section class="results" id="results">
+
+    <div class="panel">
+        <h2>02 / Recognition Summary</h2>
+
+        <div class="summary">
+            <div class="metric">
+                <small>Plates Detected</small>
+                <strong id="plateCount">0</strong>
+            </div>
+            <div class="metric">
+                <small>Image Width</small>
+                <strong id="imageWidth">-</strong>
+            </div>
+            <div class="metric">
+                <small>Image Height</small>
+                <strong id="imageHeight">-</strong>
+            </div>
+        </div>
+
+        <div id="plateResults"></div>
+    </div>
+
+    <div class="panel">
+        <h2>03 / Processed Image</h2>
+        <p class="muted">
+            Original image with detected license plate annotations.
+        </p>
+        <img id="processedImage" class="image-output"
+             alt="Processed and annotated vehicle image">
+    </div>
+
+</section>
+</main>
+
+<footer>
+    ANPR VISION · YOLO Detection · PaddleOCR · SQLite
+    <br><br>
+    Local demonstration system. Database records are synthetic
+    and must not be treated as official vehicle records.
+</footer>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const dropArea = document.getElementById("dropArea");
+const browseButton = document.getElementById("browseButton");
+const analyzeButton = document.getElementById("analyzeButton");
+const resetButton = document.getElementById("resetButton");
+const preview = document.getElementById("preview");
+const previewImage = document.getElementById("previewImage");
+const filename = document.getElementById("filename");
+const loader = document.getElementById("loader");
+const message = document.getElementById("message");
+const results = document.getElementById("results");
+
+let selectedFile = null;
+let previewURL = null;
+
+const allowedTypes = [
+    "image/jpeg", "image/png",
+    "image/bmp", "image/webp"
+];
+
+browseButton.addEventListener("click", () => fileInput.click());
+
+dropArea.addEventListener("click", (event) => {
+    if (event.target !== browseButton) fileInput.click();
+});
+
+fileInput.addEventListener("change", () => {
+    if (fileInput.files.length) {
+        selectFile(fileInput.files[0]);
+    }
+});
+
+dropArea.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    dropArea.classList.add("dragover");
+});
+
+dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("dragover");
+});
+
+dropArea.addEventListener("drop", (event) => {
+    event.preventDefault();
+    dropArea.classList.remove("dragover");
+
+    const file = event.dataTransfer.files[0];
+    if (file) selectFile(file);
+});
+
+function selectFile(file) {
+
+    clearPreviewURL();
+
+    const extension = file.name.split(".").pop().toLowerCase();
+    const allowedExtensions = ["jpg", "jpeg", "png", "bmp", "webp"];
+
+    if (!allowedTypes.includes(file.type) &&
+        !allowedExtensions.includes(extension)) {
+        message.textContent = "Please select a supported image.";
+        return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+        message.textContent = "Image must be smaller than 10 MB.";
+        return;
+    }
+
+    selectedFile = file;
+    previewURL = URL.createObjectURL(file);
+
+    previewImage.src = previewURL;
+    filename.textContent = file.name;
+
+    preview.style.display = "block";
+    analyzeButton.disabled = false;
+    results.style.display = "none";
+    message.textContent = "Image ready for analysis.";
+}
+
+function clearPreviewURL() {
+    if (previewURL) {
+        URL.revokeObjectURL(previewURL);
+        previewURL = null;
+    }
+}
+
+resetButton.addEventListener("click", () => {
+    selectedFile = null;
+    fileInput.value = "";
+
+    clearPreviewURL();
+
+    preview.style.display = "none";
+    results.style.display = "none";
+    analyzeButton.disabled = true;
+    loader.style.display = "none";
+    message.textContent = "Ready for a new image.";
+
+    document.getElementById("plateResults").replaceChildren();
+});
+
+analyzeButton.addEventListener("click", analyzeImage);
+
+async function analyzeImage() {
+
+    if (!selectedFile) return;
+
+    analyzeButton.disabled = true;
+    loader.style.display = "block";
+    message.textContent = "Uploading image and running recognition...";
+    results.style.display = "none";
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+
+        const response = await fetch("/api/analyze", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Image processing failed.");
+        }
+
+        displayResults(data);
+
+        message.textContent = "Image analysis completed successfully.";
+
+    } catch (error) {
+
+        message.textContent = "Error: " + error.message;
+
+    } finally {
+
+        analyzeButton.disabled = false;
+        loader.style.display = "none";
+    }
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
+function displayResults(data) {
+
+    document.getElementById("plateCount").textContent =
+        data.total_plates_detected;
+
+    document.getElementById("imageWidth").textContent =
+        data.image_dimensions.width + " px";
+
+    document.getElementById("imageHeight").textContent =
+        data.image_dimensions.height + " px";
+
+    const container = document.getElementById("plateResults");
+    container.replaceChildren();
+
+    if (data.results.length === 0) {
+        container.innerHTML = `
+            <div class="result-card">
+                <h3>No accepted number plates detected</h3>
+                <p class="muted">
+                    Try another image with a clearly visible vehicle number plate.
+                </p>
+            </div>`;
+    }
+
+    data.results.forEach((item, index) => {
+
+        const card = document.createElement("div");
+        card.className = "result-card";
+
+        let recordHTML = "";
+        const record = item.database_record;
+
+        if (record) {
+
+            const fields = [
+                ["Registration", "registration_number_candidate"],
+                ["Vehicle class", "vehicle_class"],
+                ["Manufacturer", "manufacturer_fake"],
+                ["Model", "model_fake"],
+                ["Variant", "variant_fake"],
+                ["Colour", "colour_fake"],
+                ["Fuel", "fuel_fake"],
+                ["Manufacture year", "manufacture_year_fake"],
+                ["State candidate", "state_from_prefix_candidate"],
+                ["RTO code candidate", "rto_code_candidate"],
+                ["Insurance status", "insurance_status_fake"],
+                ["PUC status", "puc_status_fake"],
+                ["Vehicle status", "vehicle_status_fake"]
+            ];
+
+            const fieldHTML = fields
+                .filter(([label, key]) => record[key] !== null &&
+                    record[key] !== undefined && record[key] !== "")
+                .map(([label, key]) => `
+                    <div class="data-item">
+                        <small>${escapeHTML(label)}</small>
+                        <strong>${escapeHTML(record[key])}</strong>
+                    </div>`
+                ).join("");
+
+            recordHTML = `
+                <h3>Vehicle Database Information</h3>
+                <div class="data-grid">${fieldHTML}</div>`;
+
+        } else {
+            recordHTML = `
+                <p class="muted">
+                    No matching vehicle record available.
+                </p>`;
+        }
+
+        const syntheticWarning = item.synthetic_data
+            ? `<div class="warning">
+                FICTIONAL / SYNTHETIC DEMO RECORD —
+                NOT REAL RTO DATA. Do not use this information
+                for official vehicle verification.
+               </div>`
+            : "";
+
+        const databaseLabel = escapeHTML(item.database_status);
+
+        card.innerHTML = `
+            <div class="muted">DETECTED PLATE ${index + 1}</div>
+
+            <div class="plate-number">
+                ${escapeHTML(item.plate)}
+            </div>
+
+            <div class="badges">
+                <span class="badge">
+                    YOLO: ${(item.yolo_confidence * 100).toFixed(2)}%
+                </span>
+                <span class="badge">
+                    OCR: ${(item.ocr_confidence * 100).toFixed(2)}%
+                </span>
+                <span class="badge ${item.format_valid ? "good" : "warn"}">
+                    ${escapeHTML(item.status)}
+                </span>
+                <span class="badge">
+                    DB: ${databaseLabel}
+                </span>
+            </div>
+
+            ${syntheticWarning}
+
+            ${recordHTML}
+
+            <p class="muted">
+                Bounding box: ${item.bounding_box.map(escapeHTML).join(", ")}
+            </p>
+
+            <div class="image-row">
+                <div>
+                    <h4>Detected Plate Crop</h4>
+                    <img class="image-output"
+                         src="${escapeHTML(item.crop_url)}"
+                         alt="Detected plate crop">
+                </div>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    document.getElementById("processedImage").src =
+        data.processed_image_url;
+
+    results.style.display = "block";
+    results.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+</script>
+
+</body>
+</html>
